@@ -23,7 +23,16 @@ function isNumeric(type: string): boolean {
 }
 
 function isTimestamp(type: string): boolean {
-  return /timestamp|date|time/.test(type.toLowerCase());
+  return /timestamp|date/.test(type.toLowerCase());
+}
+
+function looksLikeTimestamp(name: string, values: unknown[]): boolean {
+  // Check column name
+  if (/date|time|hour|day|week|month|minute/.test(name.toLowerCase())) return true;
+  // Check if first few values parse as dates
+  const sample = values.slice(0, 5);
+  const parsed = sample.filter((v) => typeof v === "string" && !isNaN(new Date(v as string).getTime()));
+  return parsed.length >= 3;
 }
 
 /**
@@ -33,12 +42,21 @@ function isTimestamp(type: string): boolean {
  * Aggregated = rows are roughly evenly spaced in time.
  * Raw = irregular timestamps (individual transactions).
  */
+function parseTimestamp(val: unknown): number {
+  if (typeof val !== "string") return NaN;
+  // Handle Dune's "2026-03-10 20:00:00.000 UTC" format
+  const normalized = val.replace(" UTC", "Z").replace(" ", "T");
+  const t = new Date(normalized).getTime();
+  if (!isNaN(t)) return t;
+  return new Date(val).getTime();
+}
+
 function isAggregatedTimeSeries(rows: Record<string, unknown>[], xKey: string): boolean {
   if (rows.length < 3) return false;
 
   // Parse timestamps and sort
   const times = rows
-    .map((r) => new Date(r[xKey] as string).getTime())
+    .map((r) => parseTimestamp(r[xKey]))
     .filter((t) => !isNaN(t))
     .sort((a, b) => a - b);
 
@@ -69,9 +87,15 @@ export default function ResultsChart({ rows, metadata }: Props) {
   const { column_names, column_types } = metadata;
 
   const numericIdx = column_types.findIndex((t) => isNumeric(t));
-  const timeIdx = column_types.findIndex((t) => isTimestamp(t));
+  // Check both column type AND column name/values for timestamp detection
+  let timeIdx = column_types.findIndex((t) => isTimestamp(t));
+  if (timeIdx < 0) {
+    timeIdx = column_names.findIndex((name, i) =>
+      !isNumeric(column_types[i]) && looksLikeTimestamp(name, rows.map((r) => r[name]))
+    );
+  }
   const stringIdx = column_types.findIndex(
-    (t) => !isNumeric(t) && !isTimestamp(t)
+    (t, i) => !isNumeric(t) && !isTimestamp(t) && i !== timeIdx
   );
 
   const xKey = column_names[timeIdx >= 0 ? timeIdx : stringIdx >= 0 ? stringIdx : 0];
@@ -81,7 +105,7 @@ export default function ResultsChart({ rows, metadata }: Props) {
     return <p style={{ color: "var(--text-dim)" }}>Cannot determine chart axes</p>;
   }
 
-  // Decide chart type: line only for aggregated time series
+  // Decide chart type: line for aggregated time series
   const useLineChart = timeIdx >= 0 && isAggregatedTimeSeries(rows, xKey);
 
   // Format data
