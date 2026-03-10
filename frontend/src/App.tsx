@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SqlDisplay from "./components/SqlDisplay";
 import ResultsTable from "./components/ResultsTable";
 import ResultsChart from "./components/ResultsChart";
@@ -15,10 +15,30 @@ export interface QueryResult {
   execution_time_ms: number;
 }
 
+interface HistoryEntry {
+  question: string;
+  timestamp: number;
+}
+
 const EXAMPLES = [
   "Top 10 tokens by DEX volume today",
   "ETH price over the last 7 days",
 ];
+
+const HISTORY_KEY = "dune-search-history";
+const MAX_HISTORY = 20;
+
+function loadHistory(): HistoryEntry[] {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(history: HistoryEntry[]) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+}
 
 export default function App() {
   const [question, setQuestion] = useState("");
@@ -27,7 +47,28 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "chart">("table");
   const [hasSearched, setHasSearched] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
+  const [showHistory, setShowHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    saveHistory(history);
+  }, [history]);
+
+  function addToHistory(q: string) {
+    setHistory((prev) => {
+      const filtered = prev.filter((h) => h.question !== q);
+      return [{ question: q, timestamp: Date.now() }, ...filtered];
+    });
+  }
+
+  function removeFromHistory(q: string) {
+    setHistory((prev) => prev.filter((h) => h.question !== q));
+  }
+
+  function clearHistory() {
+    setHistory([]);
+  }
 
   function downloadCsv(data: QueryResult) {
     const cols = data.metadata.column_names || Object.keys(data.rows[0]);
@@ -55,9 +96,11 @@ export default function App() {
 
     setQuestion(query);
     setHasSearched(true);
+    setShowHistory(false);
     setLoading(true);
     setError(null);
     setResult(null);
+    addToHistory(query);
 
     try {
       const resp = await fetch("http://localhost:8000/query", {
@@ -90,10 +133,22 @@ export default function App() {
     setResult(null);
     setError(null);
     setQuestion("");
+    setShowHistory(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   }
 
-  // Landing page — Google style
+  function formatTime(ts: number): string {
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
+
+  // Landing page
   if (!hasSearched) {
     return (
       <div className="landing">
@@ -112,9 +167,42 @@ export default function App() {
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onFocus={() => setShowHistory(true)}
+              onBlur={() => setTimeout(() => setShowHistory(false), 200)}
               placeholder="e.g. What are the top DEXes by volume this week?"
               autoFocus
             />
+            {showHistory && history.length > 0 && (
+              <div className="history-dropdown">
+                <div className="history-header">
+                  <span>Recent searches</span>
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); clearHistory(); }}>Clear all</button>
+                </div>
+                {history.map((h) => (
+                  <div key={h.question} className="history-item">
+                    <button
+                      type="button"
+                      className="history-query"
+                      onMouseDown={(e) => { e.preventDefault(); handleQuery(h.question); }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                        <polyline points="1 4 1 10 7 10" />
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                      </svg>
+                      <span>{h.question}</span>
+                      <span className="history-time">{formatTime(h.timestamp)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="history-remove"
+                      onMouseDown={(e) => { e.preventDefault(); removeFromHistory(h.question); }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </form>
 
           <div className="landing-examples">
@@ -129,7 +217,7 @@ export default function App() {
     );
   }
 
-  // Results page — search bar at top
+  // Results page
   return (
     <div className="results-page">
       <div className="top-bar">
