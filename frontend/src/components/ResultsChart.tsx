@@ -26,12 +26,48 @@ function isTimestamp(type: string): boolean {
   return /timestamp|date|time/.test(type.toLowerCase());
 }
 
+/**
+ * Detect if timestamp data looks like an aggregated time series
+ * (e.g. daily volume, hourly prices) vs raw transactions.
+ *
+ * Aggregated = rows are roughly evenly spaced in time.
+ * Raw = irregular timestamps (individual transactions).
+ */
+function isAggregatedTimeSeries(rows: Record<string, unknown>[], xKey: string): boolean {
+  if (rows.length < 3) return false;
+
+  // Parse timestamps and sort
+  const times = rows
+    .map((r) => new Date(r[xKey] as string).getTime())
+    .filter((t) => !isNaN(t))
+    .sort((a, b) => a - b);
+
+  if (times.length < 3) return false;
+
+  // Calculate gaps between consecutive points
+  const gaps: number[] = [];
+  for (let i = 1; i < times.length; i++) {
+    gaps.push(times[i] - times[i - 1]);
+  }
+
+  // Find the median gap
+  const sorted = [...gaps].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+
+  // If median gap is at least 1 hour, it's likely aggregated (daily, hourly, etc.)
+  const ONE_HOUR = 3600 * 1000;
+  if (median < ONE_HOUR) return false;
+
+  // Check consistency: most gaps should be within 3x of the median
+  const consistent = gaps.filter((g) => g > 0 && g <= median * 3).length;
+  return consistent / gaps.length > 0.6;
+}
+
 export default function ResultsChart({ rows, metadata }: Props) {
   if (!rows.length) return <p style={{ color: "var(--text-dim)" }}>No data to chart</p>;
 
   const { column_names, column_types } = metadata;
 
-  // Find a good x-axis (first string/timestamp column) and y-axis (first numeric column)
   const numericIdx = column_types.findIndex((t) => isNumeric(t));
   const timeIdx = column_types.findIndex((t) => isTimestamp(t));
   const stringIdx = column_types.findIndex(
@@ -45,25 +81,33 @@ export default function ResultsChart({ rows, metadata }: Props) {
     return <p style={{ color: "var(--text-dim)" }}>Cannot determine chart axes</p>;
   }
 
-  // Format data — truncate x labels, ensure y is number
-  const data = rows.map((row) => ({
-    ...row,
-    [xKey]:
-      typeof row[xKey] === "string" && row[xKey] !== null
-        ? (row[xKey] as string).length > 20
-          ? (row[xKey] as string).slice(0, 17) + "..."
-          : row[xKey]
-        : row[xKey],
-    [yKey]: Number(row[yKey]) || 0,
-  }));
+  // Decide chart type: line only for aggregated time series
+  const useLineChart = timeIdx >= 0 && isAggregatedTimeSeries(rows, xKey);
 
-  const useLineChart = timeIdx >= 0;
+  // Format data
+  const data = rows.map((row) => {
+    let xVal = row[xKey];
+    if (typeof xVal === "string" && xVal.length > 20) {
+      xVal = xVal.slice(0, 17) + "...";
+    }
+    return {
+      ...row,
+      [xKey]: xVal,
+      [yKey]: Number(row[yKey]) || 0,
+    };
+  });
 
   const formatYAxis = (val: number) => {
     if (val >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(1)}B`;
     if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
     if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
     return val.toLocaleString();
+  };
+
+  const tooltipStyle = {
+    contentStyle: { background: "#1e1e2e", border: "1px solid #2a2a3d", borderRadius: 6 },
+    labelStyle: { color: "#e0e0e8" },
+    itemStyle: { color: "#f0a030" },
   };
 
   return (
@@ -74,11 +118,7 @@ export default function ResultsChart({ rows, metadata }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" />
             <XAxis dataKey={xKey} tick={{ fill: "#8888a0", fontSize: 12 }} />
             <YAxis tickFormatter={formatYAxis} tick={{ fill: "#8888a0", fontSize: 12 }} />
-            <Tooltip
-              contentStyle={{ background: "#1e1e2e", border: "1px solid #2a2a3d", borderRadius: 6 }}
-              labelStyle={{ color: "#e0e0e8" }}
-              itemStyle={{ color: "#f0a030" }}
-            />
+            <Tooltip {...tooltipStyle} />
             <Line type="monotone" dataKey={yKey} stroke="#f0a030" strokeWidth={2} dot={false} />
           </LineChart>
         ) : (
@@ -86,17 +126,13 @@ export default function ResultsChart({ rows, metadata }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" />
             <XAxis dataKey={xKey} tick={{ fill: "#8888a0", fontSize: 12 }} angle={-30} textAnchor="end" height={80} />
             <YAxis tickFormatter={formatYAxis} tick={{ fill: "#8888a0", fontSize: 12 }} />
-            <Tooltip
-              contentStyle={{ background: "#1e1e2e", border: "1px solid #2a2a3d", borderRadius: 6 }}
-              labelStyle={{ color: "#e0e0e8" }}
-              itemStyle={{ color: "#f0a030" }}
-            />
+            <Tooltip {...tooltipStyle} />
             <Bar dataKey={yKey} fill="#f0a030" radius={[4, 4, 0, 0]} />
           </BarChart>
         )}
       </ResponsiveContainer>
       <div className="chart-note">
-        X: {xKey} | Y: {yKey}
+        X: {xKey} | Y: {yKey} | {useLineChart ? "Line" : "Bar"} chart
       </div>
     </div>
   );
