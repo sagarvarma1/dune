@@ -13,6 +13,7 @@ export interface QueryResult {
     column_types: string[];
     row_count: number;
   };
+  execution_time_ms: number;
 }
 
 export default function App() {
@@ -20,6 +21,26 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "chart">("table");
+
+  function downloadCsv(data: QueryResult) {
+    const cols = data.metadata.column_names || Object.keys(data.rows[0]);
+    const header = cols.join(",");
+    const rows = data.rows.map((row) =>
+      cols.map((c) => {
+        const val = row[c];
+        const str = val === null || val === undefined ? "" : String(val);
+        return str.includes(",") || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+      }).join(",")
+    );
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dune_results.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleQuery(question: string) {
     setLoading(true);
@@ -71,20 +92,25 @@ export default function App() {
 
       {result && (
         <>
-          <SqlDisplay sql={result.sql} />
+          <SqlDisplay sql={result.sql} executionTimeMs={result.execution_time_ms} />
 
-          <div className="tabs">
-            <button
-              className={activeTab === "table" ? "active" : ""}
-              onClick={() => setActiveTab("table")}
-            >
-              Table
-            </button>
-            <button
-              className={activeTab === "chart" ? "active" : ""}
-              onClick={() => setActiveTab("chart")}
-            >
-              Chart
+          <div className="tabs-bar">
+            <div className="tabs">
+              <button
+                className={activeTab === "table" ? "active" : ""}
+                onClick={() => setActiveTab("table")}
+              >
+                Table
+              </button>
+              <button
+                className={activeTab === "chart" ? "active" : ""}
+                onClick={() => setActiveTab("chart")}
+              >
+                Chart
+              </button>
+            </div>
+            <button className="download-btn" onClick={() => downloadCsv(result)}>
+              Download CSV
             </button>
           </div>
 

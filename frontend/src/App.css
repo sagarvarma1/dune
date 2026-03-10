@@ -168,12 +168,50 @@ body {
   color: var(--accent);
 }
 
+/* SQL Header */
+.sql-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.exec-time {
+  font-size: 0.75rem;
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* Tabs Bar */
+.tabs-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.download-btn {
+  padding: 0.4rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+}
+
+.download-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Tabs */
 .tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
 }
 
 .tabs button {
