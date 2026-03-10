@@ -139,7 +139,11 @@ export default function ResultsChart({ rows, metadata }: Props) {
     contentStyle: { background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: 6, padding: "8px 12px" },
     labelStyle: { color: "#1a1a1a", fontWeight: 600, marginBottom: 4 },
     itemStyle: { color: "#e8622c" },
-    formatter: (value: number) => [formatTooltipValue(value), yKey],
+    formatter: (value: unknown) => {
+      const numericValue = typeof value === "number" ? value : Number(value);
+      const formatted = Number.isFinite(numericValue) ? formatTooltipValue(numericValue) : String(value ?? "-");
+      return [formatted, yKey];
+    },
     cursor: { fill: "rgba(232, 98, 44, 0.08)" },
   };
 
