@@ -104,10 +104,19 @@ export default function ResultsChart({ rows, metadata }: Props) {
     return val.toLocaleString();
   };
 
+  const formatTooltipValue = (val: number) => {
+    if (val >= 1_000_000_000) return `$${(val / 1_000_000_000).toFixed(2)}B`;
+    if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
+    if (val >= 1_000) return `$${(val / 1_000).toFixed(2)}K`;
+    return val.toLocaleString();
+  };
+
   const tooltipStyle = {
-    contentStyle: { background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: 6 },
-    labelStyle: { color: "#1a1a1a" },
+    contentStyle: { background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: 6, padding: "8px 12px" },
+    labelStyle: { color: "#1a1a1a", fontWeight: 600, marginBottom: 4 },
     itemStyle: { color: "#e8622c" },
+    formatter: (value: number) => [formatTooltipValue(value), yKey],
+    cursor: { fill: "rgba(232, 98, 44, 0.08)" },
   };
 
   return (
