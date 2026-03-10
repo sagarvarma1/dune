@@ -99,7 +99,7 @@ export default function App() {
       <div className="landing">
         <div className="landing-center">
           <img src="/dune.png" alt="Dune" className="landing-logo" />
-          <h1 className="landing-title">DUNESearch</h1>
+          <h1 className="landing-title">Dune Search</h1>
           <p className="landing-subtitle">Ask questions about blockchain data in plain English</p>
 
           <form className="search-bar" onSubmit={handleSubmit}>
@@ -135,7 +135,7 @@ export default function App() {
       <div className="top-bar">
         <button className="top-logo" onClick={goHome}>
           <img src="/dune.png" alt="Dune" />
-          <span>DUNESearch</span>
+          <span>DUNE</span>
         </button>
         <form className="top-search-bar" onSubmit={handleSubmit}>
           <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
