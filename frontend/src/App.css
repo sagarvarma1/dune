@@ -1,0 +1,296 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d0d14;
+  --surface: #16161f;
+  --surface2: #1e1e2e;
+  --border: #2a2a3d;
+  --text: #e0e0e8;
+  --text-dim: #8888a0;
+  --accent: #f0a030;
+  --accent-hover: #ffb84d;
+  --error: #ff5555;
+  --success: #50fa7b;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+#root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.app header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.app header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.subtitle {
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+}
+
+/* Query Input */
+.query-input {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.query-input input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.query-input input:focus {
+  border-color: var(--accent);
+}
+
+.query-input input::placeholder {
+  color: var(--text-dim);
+}
+
+.query-input button {
+  padding: 0.85rem 1.5rem;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.query-input button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.query-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Example queries */
+.examples {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.examples button {
+  padding: 0.4rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.examples button:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* SQL Display */
+.sql-display {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.sql-display .label {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.sql-display pre {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sql-display .copy-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.sql-display .copy-btn:hover {
+  color: var(--accent);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs button {
+  padding: 0.6rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tabs button:hover:not(.active) {
+  color: var(--text);
+}
+
+/* Results Table */
+.results-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.results-table th {
+  background: var(--surface2);
+  padding: 0.7rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.results-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.results-table tr:last-child td {
+  border-bottom: none;
+}
+
+.results-table tr:hover td {
+  background: var(--surface);
+}
+
+.row-count {
+  text-align: right;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+/* Chart */
+.chart-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.chart-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-dim);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error */
+.error-box {
+  background: rgba(255, 85, 85, 0.1);
+  border: 1px solid var(--error);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
