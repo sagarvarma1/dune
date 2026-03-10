@@ -113,7 +113,7 @@ export default function App() {
       const body: { question: string; sql?: string } = { question: query };
       if (sqlToUse) body.sql = sqlToUse;
 
-      const resp = await fetch("http://localhost:8000/query", {
+      const resp = await fetch("https://dune-production-b335.up.railway.app/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
