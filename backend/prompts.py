@@ -40,8 +40,12 @@ Columns: blockchain, address, name, category, contributor, source
 ### gas.fees — Gas fees with L2 breakdowns
 Columns: blockchain, block_time, tx_hash, tx_fee_native, tx_fee_usd, gas_price_gwei
 
-### stablecoins.transfers — Stablecoin transfers
-Columns: blockchain, block_time, from, to, symbol, amount, amount_usd
+### stablecoins_evm.transfers — Stablecoin transfers across 37 EVM chains
+Columns: blockchain, block_month, block_date, block_time, block_number, tx_hash, evt_index, trace_address, token_standard, token_address, token_symbol, currency, amount_raw, amount, price_usd, amount_usd, "from", "to", unique_key
+NOTE: Use token_symbol (not symbol) for filtering. Use "from" and "to" with quotes since they are reserved words.
+
+### stablecoins_evm.balances — Daily stablecoin balance snapshots
+Columns: blockchain, day, address, token_symbol, token_address, token_standard, token_id, balance_raw, balance, balance_usd, currency, last_updated
 
 ### lending.borrow / lending.supply — Lending protocol data
 Columns: blockchain, project, block_time, token_symbol, amount, amount_usd, borrower/depositor
@@ -71,6 +75,18 @@ SELECT collection, SUM(amount_usd) as volume, COUNT(*) as trades
 FROM nft.trades
 WHERE block_time > now() - interval '7' day AND amount_usd IS NOT NULL
 GROUP BY 1 ORDER BY 2 DESC LIMIT 10
+
+-- USDT vs USDC daily transfer volume:
+SELECT block_date, token_symbol, SUM(amount_usd) as volume
+FROM stablecoins_evm.transfers
+WHERE block_time > now() - interval '7' day AND token_symbol IN ('USDT', 'USDC') AND amount_usd IS NOT NULL
+GROUP BY 1, 2 ORDER BY 1
+
+-- Top stablecoin holders:
+SELECT address, token_symbol, balance_usd
+FROM stablecoins_evm.balances
+WHERE day = current_date AND balance_usd IS NOT NULL
+ORDER BY balance_usd DESC LIMIT 20
 
 -- Whale transfers:
 SELECT block_time, from, to, symbol, amount_usd
