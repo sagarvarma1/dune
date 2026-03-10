@@ -18,9 +18,6 @@ export interface QueryResult {
 const EXAMPLES = [
   "Top 10 tokens by DEX volume today",
   "ETH price over the last 7 days",
-  "Largest NFT sales this week",
-  "Daily Uniswap volume last 30 days",
-  "Whale transfers over $1M today",
 ];
 
 export default function App() {
