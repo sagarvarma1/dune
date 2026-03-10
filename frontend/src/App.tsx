@@ -20,6 +20,8 @@ interface HistoryEntry {
   timestamp: number;
 }
 
+type Page = "landing" | "results" | "history" | "about";
+
 const EXAMPLES = [
   "Top 10 tokens by DEX volume today",
   "ETH price over the last 7 days",
@@ -46,7 +48,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "chart">("table");
-  const [hasSearched, setHasSearched] = useState(false);
+  const [page, setPage] = useState<Page>("landing");
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [showHistory, setShowHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +97,7 @@ export default function App() {
     if (!query.trim() || loading) return;
 
     setQuestion(query);
-    setHasSearched(true);
+    setPage("results");
     setShowHistory(false);
     setLoading(true);
     setError(null);
@@ -129,7 +131,7 @@ export default function App() {
   }
 
   function goHome() {
-    setHasSearched(false);
+    setPage("landing");
     setResult(null);
     setError(null);
     setQuestion("");
@@ -148,10 +150,113 @@ export default function App() {
     return `${days}d ago`;
   }
 
+  function formatDate(ts: number): string {
+    return new Date(ts).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  const navLinks = (
+    <nav className="nav-links">
+      <button onClick={() => setPage("history")}>History</button>
+      <button onClick={() => setPage("about")}>About</button>
+    </nav>
+  );
+
+  // History page
+  if (page === "history") {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <button className="top-logo" onClick={goHome}>
+            <img src="/dune.png" alt="Dune" />
+            <span>DUNE</span>
+          </button>
+          {navLinks}
+        </div>
+        <div className="page-content">
+          <h2 className="page-title">Search History</h2>
+          {history.length === 0 ? (
+            <p className="empty-state">No queries yet. Try searching for something!</p>
+          ) : (
+            <>
+              <button className="clear-all-btn" onClick={clearHistory}>Clear all</button>
+              <div className="history-list">
+                {history.map((h) => (
+                  <div key={h.question + h.timestamp} className="history-list-item">
+                    <button
+                      className="history-list-query"
+                      onClick={() => handleQuery(h.question)}
+                    >
+                      <span className="history-list-text">{h.question}</span>
+                      <span className="history-list-time">{formatDate(h.timestamp)}</span>
+                    </button>
+                    <button
+                      className="history-list-remove"
+                      onClick={() => removeFromHistory(h.question)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // About page
+  if (page === "about") {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <button className="top-logo" onClick={goHome}>
+            <img src="/dune.png" alt="Dune" />
+            <span>DUNE</span>
+          </button>
+          {navLinks}
+        </div>
+        <div className="page-content">
+          <h2 className="page-title">About Dune Search</h2>
+          <div className="about-text">
+            <p>
+              Dune Search lets you query blockchain data using plain English.
+              Type a question, and it gets converted into a DuneSQL query,
+              executed against Dune's database of 100+ blockchains, and the
+              results are displayed as interactive tables and charts.
+            </p>
+            <h3>How it works</h3>
+            <ol>
+              <li>You type a question in plain English</li>
+              <li>Claude AI converts it into a valid DuneSQL query</li>
+              <li>The query runs against Dune's 3+ petabyte blockchain database</li>
+              <li>Results are displayed as a table and auto-detected chart</li>
+            </ol>
+            <h3>Built with</h3>
+            <ul>
+              <li>Dune API — onchain data platform</li>
+              <li>Claude API — natural language to SQL</li>
+              <li>React + TypeScript — frontend</li>
+              <li>FastAPI + Python — backend</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Landing page
-  if (!hasSearched) {
+  if (page === "landing") {
     return (
       <div className="landing">
+        <nav className="landing-nav">
+          {navLinks}
+        </nav>
         <div className="landing-center">
           <img src="/dune.png" alt="Dune" className="landing-logo" />
           <h1 className="landing-title">Dune Search</h1>
@@ -237,6 +342,7 @@ export default function App() {
             disabled={loading}
           />
         </form>
+        {navLinks}
       </div>
 
       <div className="results-content">
