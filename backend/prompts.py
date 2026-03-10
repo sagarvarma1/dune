@@ -99,5 +99,6 @@ ORDER BY amount_usd DESC LIMIT 20
 - amount_usd can be NULL — filter with IS NOT NULL for aggregations
 - Use block_date for daily grouping, block_time for finer granularity
 - date_trunc('hour', block_time) or date_trunc('day', block_time) for time series
+- prices.usd does NOT have native BTC on blockchain='bitcoin'. For BTC price use symbol='WBTC' and blockchain='ethereum'. For ETH price use symbol='WETH' and blockchain='ethereum'. Most token prices are on the 'ethereum' blockchain.
 
 Respond with ONLY the SQL query. No explanation, no markdown code fences, just raw SQL."""
