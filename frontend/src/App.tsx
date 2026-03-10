@@ -18,6 +18,7 @@ export interface QueryResult {
 interface HistoryEntry {
   question: string;
   timestamp: number;
+  sql?: string;
 }
 
 type Page = "landing" | "results" | "history" | "about";
@@ -57,10 +58,11 @@ export default function App() {
     saveHistory(history);
   }, [history]);
 
-  function addToHistory(q: string) {
+  function addToHistory(q: string, sql?: string) {
     setHistory((prev) => {
+      const existing = prev.find((h) => h.question === q);
       const filtered = prev.filter((h) => h.question !== q);
-      return [{ question: q, timestamp: Date.now() }, ...filtered];
+      return [{ question: q, timestamp: Date.now(), sql: sql || existing?.sql }, ...filtered];
     });
   }
 
@@ -92,9 +94,12 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
-  async function handleQuery(q?: string) {
+  async function handleQuery(q?: string, cachedSql?: string) {
     const query = q || question;
     if (!query.trim() || loading) return;
+
+    // Check if we have cached SQL from history
+    const sqlToUse = cachedSql || history.find((h) => h.question === query)?.sql;
 
     setQuestion(query);
     setPage("results");
@@ -105,10 +110,13 @@ export default function App() {
     addToHistory(query);
 
     try {
+      const body: { question: string; sql?: string } = { question: query };
+      if (sqlToUse) body.sql = sqlToUse;
+
       const resp = await fetch("http://localhost:8000/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: query }),
+        body: JSON.stringify(body),
       });
 
       if (!resp.ok) {
@@ -118,6 +126,8 @@ export default function App() {
 
       const data: QueryResult = await resp.json();
       setResult(data);
+      // Save the SQL back to history
+      addToHistory(query, data.sql);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {

@@ -22,6 +22,7 @@ app.add_middleware(
 
 class QueryRequest(BaseModel):
     question: str
+    sql: str | None = None
 
 
 class QueryResponse(BaseModel):
@@ -38,11 +39,14 @@ async def query(req: QueryRequest):
 
     start = time.time()
 
-    try:
-        sql = nl_to_sql(req.question)
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(500, f"Failed to generate SQL: {e}")
+    if req.sql:
+        sql = req.sql
+    else:
+        try:
+            sql = nl_to_sql(req.question)
+        except Exception as e:
+            traceback.print_exc()
+            raise HTTPException(500, f"Failed to generate SQL: {e}")
 
     try:
         result = await execute_query(sql)
