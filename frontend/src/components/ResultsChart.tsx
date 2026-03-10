@@ -105,9 +105,9 @@ export default function ResultsChart({ rows, metadata }: Props) {
   };
 
   const tooltipStyle = {
-    contentStyle: { background: "#1e1e2e", border: "1px solid #2a2a3d", borderRadius: 6 },
-    labelStyle: { color: "#e0e0e8" },
-    itemStyle: { color: "#f0a030" },
+    contentStyle: { background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: 6 },
+    labelStyle: { color: "#1a1a1a" },
+    itemStyle: { color: "#e8622c" },
   };
 
   return (
@@ -115,19 +115,19 @@ export default function ResultsChart({ rows, metadata }: Props) {
       <ResponsiveContainer width="100%" height={400}>
         {useLineChart ? (
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" />
-            <XAxis dataKey={xKey} tick={{ fill: "#8888a0", fontSize: 12 }} />
-            <YAxis tickFormatter={formatYAxis} tick={{ fill: "#8888a0", fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+            <XAxis dataKey={xKey} tick={{ fill: "#6b6b6b", fontSize: 12 }} />
+            <YAxis tickFormatter={formatYAxis} tick={{ fill: "#6b6b6b", fontSize: 12 }} />
             <Tooltip {...tooltipStyle} />
-            <Line type="monotone" dataKey={yKey} stroke="#f0a030" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey={yKey} stroke="#e8622c" strokeWidth={2} dot={false} />
           </LineChart>
         ) : (
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3d" />
-            <XAxis dataKey={xKey} tick={{ fill: "#8888a0", fontSize: 12 }} angle={-30} textAnchor="end" height={80} />
-            <YAxis tickFormatter={formatYAxis} tick={{ fill: "#8888a0", fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+            <XAxis dataKey={xKey} tick={{ fill: "#6b6b6b", fontSize: 12 }} angle={-30} textAnchor="end" height={80} />
+            <YAxis tickFormatter={formatYAxis} tick={{ fill: "#6b6b6b", fontSize: 12 }} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey={yKey} fill="#f0a030" radius={[4, 4, 0, 0]} />
+            <Bar dataKey={yKey} fill="#e8622c" radius={[4, 4, 0, 0]} />
           </BarChart>
         )}
       </ResponsiveContainer>

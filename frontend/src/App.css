@@ -5,16 +5,16 @@
 }
 
 :root {
-  --bg: #0d0d14;
-  --surface: #16161f;
-  --surface2: #1e1e2e;
-  --border: #2a2a3d;
-  --text: #e0e0e8;
-  --text-dim: #8888a0;
-  --accent: #f0a030;
-  --accent-hover: #ffb84d;
-  --error: #ff5555;
-  --success: #50fa7b;
+  --bg: #ffffff;
+  --surface: #f7f7f8;
+  --surface2: #eeeeef;
+  --border: #e0e0e0;
+  --text: #1a1a1a;
+  --text-dim: #6b6b6b;
+  --accent: #e8622c;
+  --accent-hover: #d4551f;
+  --error: #d32f2f;
+  --success: #2e7d32;
 }
 
 body {
@@ -75,7 +75,7 @@ body {
 .search-bar input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 24px;
   color: var(--text);
@@ -86,7 +86,7 @@ body {
 
 .search-bar input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(240, 160, 48, 0.15);
+  box-shadow: 0 0 0 2px rgba(232, 98, 44, 0.12);
 }
 
 .search-bar input::placeholder {
@@ -114,7 +114,7 @@ body {
 
 .landing-examples button {
   padding: 0.45rem 0.9rem;
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 20px;
   color: var(--text-dim);
@@ -143,7 +143,7 @@ body {
   gap: 1.25rem;
   padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -186,7 +186,7 @@ body {
 .top-search-bar input {
   width: 100%;
   padding: 0.65rem 0.9rem 0.65rem 2.75rem;
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   color: var(--text);
@@ -248,7 +248,7 @@ body {
   top: 0.75rem;
   right: 0.75rem;
   padding: 0.3rem 0.6rem;
-  background: var(--surface2);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-dim);
@@ -285,7 +285,7 @@ body {
 
 .download-btn {
   padding: 0.4rem 0.9rem;
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text-dim);
@@ -341,7 +341,7 @@ body {
 }
 
 .results-table th {
-  background: var(--surface2);
+  background: var(--surface);
   padding: 0.7rem 1rem;
   text-align: left;
   font-weight: 600;
@@ -380,7 +380,7 @@ body {
 
 /* Chart */
 .chart-wrapper {
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
@@ -416,7 +416,7 @@ body {
 
 /* Error */
 .error-box {
-  background: rgba(255, 85, 85, 0.1);
+  background: rgba(211, 47, 47, 0.06);
   border: 1px solid var(--error);
   border-radius: 8px;
   padding: 0.85rem 1.1rem;
